@@ -15,7 +15,9 @@
             1. recebe uma estrutura t_args como argumento, que contém {id, *vetor, posição de ínicio, posição fim}
             2. Incrementa os elementos no intervalo
             3. pthread_exit()
-        
+        Sobre a verificação:
+            1. Ela recebe o vetor não processado pelas threads e o vetor processado por elas.
+            2. Ela 
 
 */
 
