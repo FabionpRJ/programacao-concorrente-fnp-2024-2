@@ -3,14 +3,14 @@
 /* Codigo: Comunicação entre threads usando variável compartilhada e exclusao mutua com bloqueio */
 /* Aluno: Fábio do Nascimento Patão*/
 
-
 #include <stdio.h>
 #include <stdlib.h> 
 #include <pthread.h>
 
 long int soma = 0; //variavel compartilhada entre as threads
 pthread_mutex_t mutex; //variavel de lock para exclusao mutua
-pthread_cond_t cond;
+pthread_cond_t cond_extra;
+pthread_cond_t cond_tarefa;
 int estado = 0; // Esta variável vai contar o estado
 
 
@@ -25,8 +25,9 @@ void *ExecutaTarefa (void *arg) {
      pthread_mutex_lock(&mutex);
      //--SC (seção critica)
      soma++; //incrementa a variavel compartilhada 
-     if(!(soma%10)){
-     	pthread_cond_signal(&cond);
+     if(!(soma % 10) && estado < 20){ // sinaliza apenas se estado for menor que 20
+     	pthread_cond_signal(&cond_extra);
+      pthread_cond_wait(&cond_tarefa, &mutex);
      }
      pthread_mutex_unlock(&mutex);
   }
@@ -37,14 +38,14 @@ void *ExecutaTarefa (void *arg) {
 //funcao executada pela thread de log
 void *extra (void *args) {
   printf("Extra : esta executando...\n");
-  for (int i=0; i<10000; i++) { //Loop se repete 10.000 vezes de maneira
-				//arbitrária.
+  while (estado < 20) { // Executa até que 20 múltiplos sejam impressos
      pthread_mutex_lock(&mutex);
-     if (estado < 20){
-     	pthread_cond_wait(&cond,&mutex);
-     }
-     if (!(soma%10)) //imprime se 'soma' for multiplo de 10
+     pthread_cond_wait(&cond_extra,&mutex);
+     if (estado < 20 && !(soma % 10)) { //imprime se 'soma' for múltiplo de 10
         printf("soma = %ld \n", soma);
+        estado++;
+     }
+     pthread_cond_broadcast(&cond_tarefa);
      pthread_mutex_unlock(&mutex);
   }
 
@@ -70,6 +71,8 @@ int main(int argc, char *argv[]) {
 
    //--inicilaiza o mutex (lock de exclusao mutua)
    pthread_mutex_init(&mutex, NULL);
+   pthread_cond_init(&cond_extra, NULL);
+   pthread_cond_init(&cond_tarefa, NULL);
 
    //--cria as threads
    for(long int t=0; t<nthreads; t++) {
