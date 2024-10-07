@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <pthread.h>
+
+
+void w_lock(pthread_mutex_t *mutex){
+	pthread_mutex_lock(&mutex);
+	quer_escrever++;
+	while(escrevendo != 0){ //Meio redundante escrever algo != 0
+		printf("Quero Escrever!!\n");
+		pthread_cond_wait(&escrevendo,&mutex);
+	}
+	quer_escrever--;
+	escrevendo++;
+	pthread_mutex_unlock(&mutex); //Dar um unlock em uma função de lock me faz me sentir um criminoso.
+}
+
+void r_lock(pthread_mutex_t *mutex){
+	pthread_mutex_lock(&mutex);
+	quer_ler++;
+	while(lendo != 0 || quer_escrever != 0){ //Aqui, se alguém está interessado em escrever algo, deve-se
+						 //Travar todas as novas leituras em fila.
+		printf("Quero ler!!!\n");
+		pthread_cond_wait(&lendo,&mutex);
+	}
+	quer_ler--;
+	lendo++;
+	pthread_mutex_unlock(&mutex); //Novamente... parece um crime.
+}
+
+void unlock(pthread_mutex_t *mutex){
+	//Presume-se que a função que chama o unlock esteja com o mutex destravado...
+	//O que é completamente não intuitivo. Porém, para que múltiplas funções estejam
+	//Lendo ao mesmo tempo, não podemos exigir a Exclusão mútua
+	//
+	//O travamento real da função ocorre na barreira, via o cond. O mutex pouco importa se está
+	//travando ou não.
+	pthread_mutex_lock(&mutex);
+	if(escrevendo > 0){
+		escrevendo--;
+		printf("Já escrevi!!\n");
+		if(escrevendo == 0){ //Não há mais escritores!
+			printf("PODEM VOLTAR A LER!!\n");
+			pthread_cond_broadcast(&leitor);
+		}
+	}
+	else if(lendo > 0){
+		lendo--;
+		if(lendo == 0){ //Não há mais leitores!!
+			printf("PODEM VOLTAR A ESCREVER!!!!\n");
+			pthread_cond_broadcast(&escritor);
+		}
+	}
+	pthread_mutex_unlock(&mutex);
+	//Note, não há mutex nesta função, é realmente um grande unlock com broadcast!!
+}

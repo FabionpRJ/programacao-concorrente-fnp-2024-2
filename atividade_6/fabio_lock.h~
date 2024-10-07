@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <pthread.h>
+
+
+
+pthread_mutex_t mutex;
+pthread_cond_t escritor;
+pthread_cond_t leitor;
+
+int escrevendo = 0;
+int lendo = 0;
+
+int quer_escrever = 0;
+int quer_ler = 0;
+/*
+ * 	A lógica do nosso programa será controlada por estas simples variáveis de controle
+ *   	1. Escrevendo e Lendo:
+ *    		Indica quantas threads estão atualmente em processo de leitura e de escrita.
+ *     		Note que pela natureza do programa, sempre teremos Leitura = 0 e Escrita != 0
+ *      		Ou Leitura != 0 e Escrita = 0 (Ou alguns leêm, ou alguém escreve)
+ *       
+ *      2. quer_escrever e quer_ler:
+ *   		quer_ler é uma variável inútil para a proposta deste trabalho.
+ *          	quer_escrever é uma variável que utilizaremos para FORÇAR PRIORIDADE DA ESCRITA
+ *           	e evitar um starvation.
+ *            
+ */
+
+void w_lock(&mutex);
