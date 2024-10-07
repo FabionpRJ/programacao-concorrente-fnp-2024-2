@@ -5,6 +5,13 @@
 pthread_mutex_t mut_ = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t escritor = PTHREAD_COND_INITIALIZER;
 pthread_cond_t leitor = PTHREAD_COND_INITIALIZER;
+/*
+pthread_mutex_t mut_
+pthread_cond_t escritor 
+pthread_cond_t leitor 
+ */
+
+
 int escrevendo = 0, lendo = 0, quer_escrever = 0, quer_ler = 0;
 
 /* Agora note, existe este Initializer para as variáveis mutex e cond
@@ -15,6 +22,8 @@ int escrevendo = 0, lendo = 0, quer_escrever = 0, quer_ler = 0;
     de entrar em um loop infinito de "Quero ler!!"
 
     Era um verdadeiro pesadelo.
+
+    Ah!! E a explicação foi a memória. deixar as chaves em memória indefinidas podem levar a erros lógicos.
  */
 
 
