@@ -2,7 +2,7 @@
 package main
 
 import (
-	"fmt"
+	"fmt" //stdio.h do go
 )
 
 func tarefa(str chan string) {
